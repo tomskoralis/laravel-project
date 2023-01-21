@@ -2,27 +2,22 @@
 
 namespace App\Providers;
 
+use App\Repositories\BankExchangeRatesRepository;
+use App\Repositories\CoinMarketCapCryptocurrenciesRepository;
+use App\Repositories\CryptocurrenciesRepository;
+use App\Repositories\ExchangeRatesRepository;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
-    public function register()
+    public function register(): void
     {
-        //
+        $this->app->bind(CryptocurrenciesRepository::class, CoinMarketCapCryptocurrenciesRepository::class);
+        $this->app->bind(ExchangeRatesRepository::class, BankExchangeRatesRepository::class);
     }
 
-    /**
-     * Bootstrap any application services.
-     *
-     * @return void
-     */
-    public function boot()
+    public function boot(): void
     {
-        //
+
     }
 }
