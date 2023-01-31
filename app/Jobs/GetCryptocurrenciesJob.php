@@ -16,7 +16,7 @@ class GetCryptocurrenciesJob implements ShouldQueue
 
     private string|array $cryptocurrencySymbols;
     private string $currencyConvertType;
-    private const TTL = 3600;
+    private const TTL = 60;
 
     public function __construct(array|string $cryptocurrencySymbols, string $currencyConvertType)
     {

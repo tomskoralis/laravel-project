@@ -10,13 +10,13 @@
             <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
                 <div class="max-w-xl">
 
-                    <h2 class="mb-2 font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                    <h3 class="mb-2 font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         @if($account->label)
                             {!! $account->label !!} ({{$account->number}})
                         @else
                             {{$account->number}}
                         @endif
-                    </h2>
+                    </h3>
 
                     <p class="dark:text-white">
                         {{__('Currency:')}} {{$account->currency}}

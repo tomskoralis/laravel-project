@@ -4,6 +4,7 @@ use App\Http\Controllers\Account\AccountCreateController;
 use App\Http\Controllers\Account\AccountDeleteController;
 use App\Http\Controllers\Account\AccountReadController;
 use App\Http\Controllers\Account\AccountUpdateController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Cryptocurrency\CryptocurrencyBuyController;
 use App\Http\Controllers\Cryptocurrency\CryptocurrencyReadController;
 use App\Http\Controllers\Cryptocurrency\CryptocurrencySellController;
@@ -24,10 +25,6 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
 
 Route::middleware(['auth', 'prevent-back-history'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])

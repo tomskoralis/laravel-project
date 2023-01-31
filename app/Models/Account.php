@@ -41,10 +41,11 @@ class Account extends Model
 
     public function formatTimestamp(Carbon $time): string
     {
-        $timezone = auth()->user()->timezone;
-        if ($timezone) {
-            return date('d/m/Y G:i', strtotime($time->timezone($timezone)));
-        }
-        return date('d/m/Y G:i', strtotime($time));
+        return auth()->user()->timezone
+            ? $time
+                ->setTimezone(auth()->user()->timezone)
+                ->format('d/m/Y G:i')
+            : $time
+                ->format('d/m/Y G:i');
     }
 }

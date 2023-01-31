@@ -10,9 +10,9 @@
             <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
                 <div class="max-w-xl">
                     <div class="flex items-center gap-4">
-                        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                             {{__('Security Codes')}}
-                        </h2>
+                        </h3>
 
                         @if (session('status') === 'codes-generated')
                             <p x-data="{ show: true }" x-show="show" x-transition
@@ -35,7 +35,7 @@
                     </p>
                 @else
 
-                    <ul class="grid grid-rows-1 grid-flow-row md:grid-rows-4 md:grid-flow-col gap-x-4 text-gray-900 dark:text-gray-100">
+                    <ul class="max-w-2xl grid grid-rows-1 grid-flow-row md:grid-rows-5 md:grid-flow-col gap-x-4 text-gray-900 dark:text-gray-100">
                         @foreach($securityCodes as $key => $securityCode)
                             <li class="w-fit">
                                 {{$key + 1}}. {{$securityCode}}

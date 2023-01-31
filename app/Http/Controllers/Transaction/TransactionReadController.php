@@ -15,52 +15,54 @@ use function auth;
 
 class TransactionReadController extends Controller
 {
+    private const COUNT_PER_PAGE = 15;
+
     public function index(Request $request): View
     {
+        $query = $request->all();
         $userAccounts = auth()->user()->accounts()->whereNull('closed_at');
-
-        $transactions = Transaction::where(function (Builder $query) use ($userAccounts) {
-            $accountIds = $userAccounts->pluck('id')->toArray();
-            return $query
-                ->whereIn('to_account_id', $accountIds)
-                ->orWhereIn('from_account_id', $accountIds);
-        });
-
         $accountId = $request->input('account_id');
         $cryptoAccountId = $request->input('crypto_account_id');
 
         if ($request->input('crypto')) {
             if ($cryptoAccountId === null || $cryptoAccountId === 'crypto') {
-                $transactions = $transactions->where(function (Builder $query) use ($userAccounts) {
-                    $accountIds = $userAccounts->where('type', 'crypto')->pluck('id')->toArray();
+                $transactions = Transaction::where(function (Builder $query) use ($userAccounts) {
+                    $cryptoAccountIds = $userAccounts->where('type', 'crypto')->pluck('id')->toArray();
                     return $query
-                        ->whereIn('from_account_id', $accountIds)
-                        ->orWhereIn('to_account_id', $accountIds);
+                        ->whereIn('from_account_id', $cryptoAccountIds)
+                        ->orWhereIn('to_account_id', $cryptoAccountIds);
                 });
             } else {
-                $transactions = $transactions->where(function (Builder $query) use ($cryptoAccountId) {
+                $transactions = Transaction::where(function (Builder $query) use ($cryptoAccountId) {
                     return $query
                         ->where('from_account_id', $cryptoAccountId)
                         ->orWhere('to_account_id', $cryptoAccountId);
                 });
             }
         } else {
-            $accountIds = $userAccounts->where('type', 'regular')->pluck('id')->toArray();
-            $externalAccountIds = Account::whereNotIn('id', auth()->user()->accounts()->pluck('id')->toArray())
-                ->pluck('id')
-                ->toArray();
-            $transactions = $transactions->where(function (Builder $query) use ($accountIds, $externalAccountIds) {
+            $transactions = Transaction::where(function (Builder $query) use ($userAccounts) {
+                $accountIds = $userAccounts->where('type', 'regular')->pluck('id')->toArray();
+                $externalAccountIds = Account::where('type', 'regular')
+                    ->whereNotIn('id', auth()->user()->accounts()->pluck('id')->toArray())
+                    ->pluck('id')
+                    ->toArray();
                 return $query
-                    ->whereIn('from_account_id', $accountIds)
-                    ->whereIn('to_account_id', $accountIds)
-                    ->orWhere(function (Builder $query) use ($accountIds, $externalAccountIds) {
+                    ->where(function (Builder $query) use ($accountIds, $externalAccountIds) {
                         return $query
                             ->whereIn('from_account_id', $accountIds)
                             ->whereIn('to_account_id', $externalAccountIds);
+                    })->orWhere(function (Builder $query) use ($accountIds, $externalAccountIds) {
+                        return $query
+                            ->whereIn('from_account_id', $externalAccountIds)
+                            ->whereIn('to_account_id', $accountIds);
+                    })->orWhere(function (Builder $query) use ($accountIds, $externalAccountIds) {
+                        return $query
+                            ->whereIn('from_account_id', $accountIds)
+                            ->whereIn('to_account_id', $accountIds);
                     });
             });
             if ($accountId !== null && $accountId !== 'regular') {
-                $transactions = $transactions->where(function (Builder $query) use ($accountId, $externalAccountIds) {
+                $transactions = $transactions->where(function (Builder $query) use ($accountId) {
                     return $query
                         ->where('from_account_id', $accountId)
                         ->orWhere('to_account_id', $accountId);
@@ -74,6 +76,10 @@ class TransactionReadController extends Controller
                 $request->input('date_from'),
                 auth()->user()->timezone ?? 'UTC'
             )->startOfDay()->setTimezone('UTC');
+            if ($dayFrom->lessThan(now()->subYear())) {
+                $dayFrom = now()->subYear();
+                $query['date_from'] = $dayFrom->format('Y-m-d');
+            }
             $transactions = $transactions->where('time', '>', $dayFrom);
         }
 
@@ -83,6 +89,10 @@ class TransactionReadController extends Controller
                 $request->input('date_to'),
                 auth()->user()->timezone ?? 'UTC'
             )->endofDay()->setTimezone('UTC');
+            if ($dayTo->greaterThan(now())) {
+                $dayTo = now();
+                $query['date_to'] = $dayTo->format('Y-m-d');
+            }
             $transactions = $transactions->where('time', '<', $dayTo);
         }
 
@@ -118,25 +128,25 @@ class TransactionReadController extends Controller
             );
         }
 
-        $query = $request->all();
         $accounts = auth()->user()->accounts()->whereNull('closed_at')->where('type', 'regular')->get();
         $cryptoAccounts = auth()->user()->accounts()->whereNull('closed_at')->where('type', 'crypto')->get();
-        $transactions = $transactions->orderByDesc('id')->get();
+        $transactions = $transactions->orderByDesc('id')->paginate(self::COUNT_PER_PAGE);
 
         return view('transaction.index')
             ->with([
                 'query' => $query,
                 'accounts' => $accounts,
                 'cryptoAccounts' => $cryptoAccounts,
-                'transactions' => $transactions
+                'transactions' => $transactions,
+                'countPerPage' => self::COUNT_PER_PAGE,
             ]);
     }
 
     public function show(Transaction $transaction): View
     {
         if (
-            Account::findOrFail($transaction->from_account_id)->user_id !== auth()->user()->id ||
-            Account::findOrFail($transaction->to_account_id)->user_id !== auth()->user()->id
+            Account::find($transaction->from_account_id)->user_id !== auth()->user()->id &&
+            Account::find($transaction->to_account_id)->user_id !== auth()->user()->id
         ) {
             abort(403);
         }

@@ -17,6 +17,6 @@ class DatabaseSeeder extends Seeder
             ->has(Account::factory(1))
             ->has(SecurityCode::factory(20))
             ->create();
-        Transaction::factory(50)->create();
+        Transaction::factory(500)->create();
     }
 }

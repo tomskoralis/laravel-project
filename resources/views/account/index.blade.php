@@ -15,9 +15,9 @@
                     </p>
                 @else
                     <div class="max-w-xl">
-                        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                             {{__('All Accounts')}}
-                        </h2>
+                        </h3>
 
                         <div
                             @if ($accountsHaveLabel)
@@ -77,17 +77,18 @@
 
                 <div class="mt-4 flex gap-2">
                     @if(!$accounts->isEmpty())
-                        <x-primary-button>
-                            <a href="{{route('transaction.create')}}">
+                        <a href="{{route('transaction.create')}}">
+                            <x-primary-button>
                                 {{__('New Transaction')}}
-                            </a>
-                        </x-primary-button>
-                    @endif
-                    <x-primary-button>
-                        <a href="{{route('account.create')}}">
-                            {{__('Create Account')}}
+                            </x-primary-button>
                         </a>
-                    </x-primary-button>
+
+                    @endif
+                    <a href="{{route('account.create')}}">
+                        <x-primary-button>
+                            {{__('Create Account')}}
+                        </x-primary-button>
+                    </a>
                 </div>
 
             </div>

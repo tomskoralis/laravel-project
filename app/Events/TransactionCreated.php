@@ -36,6 +36,8 @@ class TransactionCreated
                 ),
                 2
             );
+        } elseif ($transaction->incoming_amount) {
+            $incomingAmount = $transaction->incoming_amount;
         } else {
             $fromCryptocurrencySymbol = $fromAccount->value('type') === 'crypto'
                 ? $fromAccount->value('currency')

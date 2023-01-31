@@ -11,9 +11,9 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="max-w-xl">
 
-                        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                             {{__('Transfer currency to another account')}}
-                        </h2>
+                        </h3>
 
                         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                             {{__("Enter the accounts from and to which to transfer currency and the amount to transfer.")}}

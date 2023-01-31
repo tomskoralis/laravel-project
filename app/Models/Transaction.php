@@ -39,10 +39,28 @@ class Transaction extends Model
         return $this->belongsTo(Account::class, 'to_account_id', 'id');
     }
 
+    public function getAmountConvertedFormattedAttribute(): string
+    {
+        $type = $this->getTypeAttribute();
+        if ($type === 'Incoming' || $type === 'Buying') {
+            return (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::CURRENCY))
+                ->formatCurrency(
+                    $this->outgoing_amount,
+                    Account::where('id', $this->from_account_id)->value('currency')
+                );
+        } else {
+            return (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::CURRENCY))
+                ->formatCurrency(
+                    $this->incoming_amount,
+                    Account::where('id', $this->to_account_id)->value('currency')
+                );
+        }
+    }
+
     public function getAmountFormattedAttribute(): string
     {
         $type = $this->getTypeAttribute();
-        if ($type === 'Incoming' || $type === 'Selling') {
+        if ($type === 'Incoming' || $type === 'Buying') {
             return (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::CURRENCY))
                 ->formatCurrency(
                     $this->incoming_amount,
@@ -69,37 +87,71 @@ class Transaction extends Model
                 $incomingAccount->contains('type', 'regular') &&
                 $outgoingAccount->contains('type', 'crypto')
             ) {
-                return 'Buying';
+                return 'Selling';
             } elseif (
                 $incomingAccount->contains('type', 'crypto') &&
                 $outgoingAccount->contains('type', 'regular')
             ) {
-                return 'Selling';
+                return 'Buying';
             }
-            return 'Internal';
-        } elseif ($incoming && !$outgoing) {
+            return 'Transferring';
+        } elseif ($incoming) {
             return 'Incoming';
-        } elseif (!$incoming && $outgoing) {
+        } elseif ($outgoing) {
             return 'Outgoing';
         }
         return 'Unknown';
     }
 
-    public function getFromAccountNumberAttribute(): string
+    public function getTimeFormattedAttribute(): string
     {
-        return Account::where('id', $this->from_account_id)->value('number');
+        return auth()->user()->timezone
+            ? $this->time
+                ->setTimezone(auth()->user()->timezone)
+                ->format('d/m/Y G:i')
+            : $this->time
+                ->format('d/m/Y G:i');
     }
 
-    public function getToAccountNumberAttribute(): string
+    public function getFromAccountNameAttribute(): string
     {
-        return Account::where('id', $this->to_account_id)->value('number');
+        $account = Account::where('id', $this->from_account_id);
+        return $account->value('user_id') === auth()->user()->id
+            ? $account->value('label') ?? $account->value('number')
+            : $account->value('number');
     }
 
-    public function getTimestampFormattedAttribute(): string
+    public function getToAccountNameAttribute(): string
     {
-        if (auth()->user()->timezone) {
-            return date('d/m/Y G:i', strtotime($this->time->timezone(auth()->user()->timezone)));
-        }
-        return date('d/m/Y G:i', strtotime($this->time));
+        $account = Account::where('id', $this->to_account_id);
+        return $account->value('user_id') === auth()->user()->id
+            ? $account->value('label') ?? $account->value('number')
+            : $account->value('number');
+    }
+
+    public function getFromUserNameAttribute(): string
+    {
+        return User::where(
+            'id',
+            Account::where('id', $this->from_account_id)->value('user_id')
+        )->value('name');
+    }
+
+    public function getToUserNameAttribute(): string
+    {
+        return User::where(
+            'id',
+            Account::where('id', $this->to_account_id)->value('user_id')
+        )->value('name');
+    }
+
+    public function getFromCurrencyAttribute(): string
+    {
+        return Account::where('id', $this->from_account_id)->value('currency');
+    }
+
+    public function getToCurrencyAttribute(): string
+    {
+        return Account::where('id', $this->to_account_id)->value('currency');
     }
 }

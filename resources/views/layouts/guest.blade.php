@@ -24,12 +24,24 @@
         @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/scripts.js'])
     </head>
     <body class="font-sans text-gray-900 antialiased dark:bg-gray-900">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center bg-gray-100 dark:bg-gray-900">
-            <div class="mb-auto ml-auto mr-6 mt-4">
-                <x-theme-toggle-button></x-theme-toggle-button>
-            </div>
+        <div class="min-h-screen flex flex-col justify-end sm:justify-center items-center bg-gray-100 dark:bg-gray-900">
 
-            <div>
+            @if (Route::has('login'))
+                <div class="sm:fixed sm:top-0 sm:right-0 px-6 py-4 flex self-end items-center justify-center gap-3">
+                    @auth
+                        <a href="{{ route('accounts.index') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Dashboard</a>
+                    @else
+                        <a href="{{ route('login') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Log in</a>
+
+                        @if (Route::has('register'))
+                            <a href="{{ route('register') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Register</a>
+                        @endif
+                    @endauth
+                    <x-theme-toggle-button></x-theme-toggle-button>
+                </div>
+            @endif
+
+            <div class="mt-auto">
                 <a href="/">
                     <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
                 </a>

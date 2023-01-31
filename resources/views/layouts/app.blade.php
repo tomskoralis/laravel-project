@@ -21,6 +21,8 @@
                 document.documentElement.classList.remove('dark')
             }
         </script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
         @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/scripts.js'])
     </head>
     <body class="font-sans antialiased dark:bg-gray-900">

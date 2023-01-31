@@ -10,9 +10,9 @@
             <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
                 <div class="max-w-xl">
 
-                    <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                         {{__('Create a new regular account')}}
-                    </h2>
+                    </h3>
 
                     <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                         {{__("Enter the currency in which to open the account. Cryptocurrency accounts can only be created while buying a cryptocurrency. Entering a label is not required.")}}

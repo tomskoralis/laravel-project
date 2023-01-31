@@ -17,7 +17,7 @@ class TransactionFactory extends Factory
         return [
             'outgoing_amount' => fake()->randomFloat(2, 0.01, ($from->balance/10)),
             'from_account_id' => $from->id,
-            'to_account_id' => Account::inRandomOrder()->get()->first()->id,
+            'to_account_id' => Account::inRandomOrder()->whereNot('id', $from->id)->get()->first()->id,
         ];
     }
 }

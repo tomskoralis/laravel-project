@@ -16,13 +16,13 @@
                                 {{__('No cryptocurrency found!')}}
                             </p>
                         @else
-                            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                                 {{__('Buy ')}}
                                 {!!$cryptocurrency->getName()!!}
                                 @if($cryptocurrency->getName() !== $cryptocurrency->getSymbol())
                                     ({!!$cryptocurrency->getSymbol()!!})
                                 @endif
-                            </h2>
+                            </h3>
 
                             <p>
                                 {{__('Price: ')}}
