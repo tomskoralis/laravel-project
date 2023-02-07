@@ -19,14 +19,14 @@
 
                             @if($amountOwned <= 0)
                                 <p class="max-w-xl px-4 py-2 mt-2 rounded-lg bg-red-100 border-2 border-red-600 text-sm text-red-600 font-medium">
-                                    {{__('You do not own any')}} {!!$cryptocurrency->getSymbol()!!}!
+                                    {{__('You do not own any')}} {{$cryptocurrency->getSymbol()}}!
                                 </p>
                             @else
                                 <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                                     {{__('Sell ')}}
-                                    {!!$cryptocurrency->getName()!!}
+                                    {{$cryptocurrency->getName()}}
                                     @if($cryptocurrency->getName() !== $cryptocurrency->getSymbol())
-                                        ({!!$cryptocurrency->getSymbol()!!})
+                                        ({{$cryptocurrency->getSymbol()}})
                                     @endif
                                 </h2>
 

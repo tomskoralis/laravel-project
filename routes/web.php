@@ -27,11 +27,11 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware(['auth', 'prevent-back-history'])->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])
+    Route::get('/settings', [ProfileController::class, 'edit'])
         ->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])
+    Route::patch('/settings', [ProfileController::class, 'update'])
         ->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])
+    Route::delete('/settings', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
 
     Route::get('/exchange-rates', [ExchangeRateController::class, 'index'])

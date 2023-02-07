@@ -18,15 +18,15 @@
                         @else
                             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                                 {{__('Buy ')}}
-                                {!!$cryptocurrency->getName()!!}
+                                {{$cryptocurrency->getName()}}
                                 @if($cryptocurrency->getName() !== $cryptocurrency->getSymbol())
-                                    ({!!$cryptocurrency->getSymbol()!!})
+                                    ({{$cryptocurrency->getSymbol()}})
                                 @endif
                             </h3>
 
                             <p>
                                 {{__('Price: ')}}
-                                {!!$cryptocurrency->getPriceFormatted($convertTo)!!}
+                                {{$cryptocurrency->getPriceFormatted($convertTo)}}
                             </p>
 
                             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">

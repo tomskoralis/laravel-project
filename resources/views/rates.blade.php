@@ -25,7 +25,7 @@
 
                     <div class="hidden sm:flex gap-8">
                         <div
-                            class="max-w-sm text-right dark:text-white grid grid-cols-[minmax(2rem,_auto)_minmax(4.5rem,_auto)_minmax(5rem,_auto)]">
+                            class="max-w-sm text-right dark:text-gray-100 grid grid-cols-[minmax(2rem,_auto)_minmax(4.5rem,_auto)_minmax(5rem,_auto)]">
                             <div class="pr-3 font-bold text-left flex items-end">
                                 &#8470;
                             </div>
@@ -49,7 +49,7 @@
                         </div>
 
                         <div
-                            class="max-w-sm text-right dark:text-white grid grid-cols-[minmax(2rem,_auto)_minmax(4.5rem,_auto)_minmax(5rem,_auto)]">
+                            class="max-w-sm text-right dark:text-gray-100 grid grid-cols-[minmax(2rem,_auto)_minmax(4.5rem,_auto)_minmax(5rem,_auto)]">
                             <div class="pr-3 font-bold text-left flex items-end">
                                 &#8470;
                             </div>
@@ -74,7 +74,7 @@
                     </div>
 
                     <div
-                        class="sm:hidden max-w-xs text-right dark:text-white grid grid-cols-[minmax(2rem,_auto)_minmax(4.5rem,_auto)_minmax(5rem,_auto)]">
+                        class="sm:hidden max-w-xs text-right dark:text-gray-100 grid grid-cols-[minmax(2rem,_auto)_minmax(4.5rem,_auto)_minmax(5rem,_auto)]">
                         <div class="pr-3 font-bold text-left flex items-end">
                             &#8470;
                         </div>

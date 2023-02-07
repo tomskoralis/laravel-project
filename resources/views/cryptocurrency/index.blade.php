@@ -22,7 +22,7 @@
                         {{__("Cryptocurrency data was gathered from coinmarketcap.com.")}}
                     </p>
 
-                    <div class="max-w-xl text-right dark:text-white grid
+                    <div class="max-w-xl text-right dark:text-gray-100 grid
                          grid-cols-[minmax(4rem,_auto)_minmax(6.5rem,_auto)_minmax(5rem,_auto)_minmax(5rem,_auto)_minmax(4.25rem,_auto)]">
 
                         <div class="pr-3 font-bold text-left flex items-end">
@@ -45,45 +45,45 @@
                             <div class="pr-3 border-t-2 border-gray-300 dark:border-gray-700 text-left">
                                 <a class="underline text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
                                    href="{{route('cryptocurrency.show',$cryptocurrency->getSymbol())}}">
-                                    {!!$cryptocurrency->getName()!!}
+                                    {{$cryptocurrency->getName()}}
                                     @if($cryptocurrency->getName() !== $cryptocurrency->getSymbol())
-                                        ({!!$cryptocurrency->getSymbol()!!})
+                                        ({{$cryptocurrency->getSymbol()}})
                                     @endif
                                 </a>
                             </div>
                             <div class="pr-3 border-t-2 border-gray-300 dark:border-gray-700">
-                                {!!$cryptocurrency->getPriceFormatted($convertTo)!!}
+                                {{$cryptocurrency->getPriceFormatted($convertTo)}}
                             </div>
                             <div class="pr-3 border-t-2 border-gray-300 dark:border-gray-700">
                                 @if($cryptocurrency->getChange1h() > 0)
                                     <span class="text-green-700 dark:text-green-400">
-                                        &#9650;{!!round($cryptocurrency->getChange1h(), 2)!!}%
+                                        &#9650;{{round($cryptocurrency->getChange1h(), 2)}}%
                                     </span>
                                 @else
                                     <span class="text-red-700 dark:text-red-400">
-                                        &#9660;{!!abs(round($cryptocurrency->getChange1h(), 2))!!}%
+                                        &#9660;{{abs(round($cryptocurrency->getChange1h(), 2))}}%
                                     </span>
                                 @endif
                             </div>
                             <div class="pr-3 border-t-2 border-gray-300 dark:border-gray-700">
                                 @if($cryptocurrency->getChange24h() > 0)
                                     <span class="text-green-700 dark:text-green-400">
-                                        &#9650;{!!round($cryptocurrency->getChange24h(), 2)!!}%
+                                        &#9650;{{round($cryptocurrency->getChange24h(), 2)}}%
                                     </span>
                                 @else
                                     <span class="text-red-700 dark:text-red-400">
-                                        &#9660;{!!abs(round($cryptocurrency->getChange24h(), 2))!!}%
+                                        &#9660;{{abs(round($cryptocurrency->getChange24h(), 2))}}%
                                     </span>
                                 @endif
                             </div>
                             <div class="border-t-2 border-gray-300 dark:border-gray-700">
                                 @if($cryptocurrency->getChange7d() > 0)
                                     <span class="text-green-700 dark:text-green-400">
-                                        &#9650;{!!round($cryptocurrency->getChange7d(), 2)!!}%
+                                        &#9650;{{round($cryptocurrency->getChange7d(), 2)}}%
                                     </span>
                                 @else
                                     <span class="text-red-700 dark:text-red-400">
-                                        &#9660;{!!abs(round($cryptocurrency->getChange7d(), 2))!!}%
+                                        &#9660;{{abs(round($cryptocurrency->getChange7d(), 2))}}%
                                     </span>
                                 @endif
                             </div>
@@ -91,7 +91,17 @@
 
                     </div>
                 @endif
+            </div>
 
+            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg"
+                 x-data="{ url: window.location.href} ">
+                <form method="get" action=""
+                      @submit.prevent="url += '/' + document.getElementById('crypto-input').value.toUpperCase();
+                                       window.location.href = url">
+                    <x-input-label for="crypto-input" :value="__('Search any other cryptocurrency by symbol')"/>
+                    <x-text-input id="crypto-input" type="text" placeholder="Search"/>
+                    <x-primary-button>Search</x-primary-button>
+                </form>
             </div>
         </div>
     </div>

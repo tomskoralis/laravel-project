@@ -81,7 +81,7 @@
                                    class="w-32 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"/>
                         </label>
 
-                        <x-primary-button>{{__('Search')}}</x-primary-button>
+                        <x-primary-button class="h-[42px] dark:h-auto">{{__('Filter')}}</x-primary-button>
 
                         <script>
                             flatpickr('#date_from');
@@ -99,81 +99,93 @@
                         {{__('No transactions found!')}}
                     </p>
                 @else
-                    <div class="w-fit">
-                        <ul>
+                    <div class="relative overflow-x-auto shadow-md md:rounded-lg border border-gray-500">
+                        <table class="w-full text-sm text-right">
+                            <thead class="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th scope="col" class="px-2 md:px-4 py-3 text-left">
+                                    &#8470;
+                                </th>
+                                <th scope="col" class="px-2 md:px-6 py-3">
+                                    {{__('Type')}}
+                                </th>
+                                <th scope="col" class="px-2 md:px-6 py-3">
+                                    {{__('Amount')}}
+                                </th>
+                                <th scope="col" class="px-2 md:px-6 py-3">
+                                    {{__('From')}}
+                                </th>
+                                <th scope="col" class="px-2 md:px-6 py-3">
+                                    {{__('To')}}
+                                </th>
+                                <th scope="col" class="px-2 md:px-6 py-3">
+                                    <span class="sr-only">{{__('Details')}}</span>
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
                             @foreach($transactions as $key => $transaction)
-                                <li class="my-2 sm:flex sm:gap-1">
-                                    <p class="font-semibold">
-                                        {{($transactions->currentPage() - 1) * $countPerPage + $key + 1}}:
-                                        {{$transaction->type}} {{$transaction->amountFormatted}}
-                                    </p>
-                                    @if(
-                                        !isset($query['account_id']) ||
-                                        $transaction->from_account_id != $query['account_id']
-                                        )
-                                        <p class="sm:ml-0 ml-4">
-                                            @if($transaction->type === 'Buying')
-                                                {{__('with')}}
-                                            @else
-                                                {{__('from')}}
-                                            @endif
-                                            {{$transaction->fromAccountName}}
-                                        </p>
-                                    @endif
-                                    @if(
-                                        !isset($query['account_id']) ||
-                                        $transaction->to_account_id != $query['account_id']
-                                        )
-                                        <p class="sm:ml-0 ml-4">
-                                            @if($transaction->type === 'Selling')
-                                                {{__('into')}}
-                                            @else
-                                                {{__('to')}}
-                                            @endif
-                                            {{$transaction->toAccountName}}
-                                        </p>
-                                    @endif
-                                    <div class="sm:pl-2 sm:grow sm:flex sm:justify-end">
-                                        <a class="sm:ml-0 ml-4 text-blue-800 dark:text-blue-400 underline"
-                                           href="{{route('transaction.show', $transaction->id)}}">Details</a>
-                                    </div>
-                                </li>
+                                <tr class="bg-white border-t dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600">
+                                    <th scope="row" class="px-2 md:px-4 py-2 font-medium whitespace-nowrap  text-left">
+                                        {{($transactions->currentPage() - 1) * $countPerPage + $key + 1}}
+                                    </th>
+                                    <td class="px-2 md:px-6 py-2">
+                                        {{$transaction->type}}
+                                    </td>
+                                    <td class="px-2 md:px-6 py-2">
+                                        {{$transaction->amountFormatted}}
+                                    </td>
+                                    <td class="px-2 md:px-6 py-2">
+                                        {{$transaction->fromAccountName}}
+                                    </td>
+                                    <td class="px-2 md:px-6 py-2">
+                                        {{$transaction->toAccountName}}
+                                    </td>
+                                    <td class="px-2 md:px-6 py-2 text-right">
+                                        <a class="sm:ml-0 ml-4 underline text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                                           href="{{route('transaction.show', $transaction->id)}}">
+                                            {{__('Details')}}
+                                        </a>
+                                    </td>
+                                </tr>
                             @endforeach
-                        </ul>
-
-                        <div class="mt-6 flex flex-col gap-3 items-start sm:flex-row sm:justify-center">
-                            <x-secondary-button
-                                class="h-10"
-                                :disabled="$transactions->onFirstPage()"
-                                @click="page--;
-                                    url.searchParams.set('page', page);
-                                    window.location.href = url.toString();">
-                                {{__('Previous')}}
-                            </x-secondary-button>
-
-                            <form method="get"
-                                  @submit.prevent
-                                  @submit="url.searchParams.set('page', document.getElementById('page-input').value);
-                                       window.location.href = url.toString();">
-                                <x-text-input id="page-input" name="page" type="text"
-                                              class="{{$transactions->lastPage() < 10 ? 'w-28' : 'w-32' }} h-10 block text-center"
-                                              placeholder="Page {{$transactions->currentPage()}} of {{$transactions->lastPage()}}">
-                                </x-text-input>
-                            </form>
-
-                            <x-secondary-button
-                                class="h-10"
-                                :disabled="$transactions->onLastPage()"
-                                @click="page++;
-                                    url.searchParams.set('page', page);
-                                    window.location.href = url.toString();">
-                                {{__('Next')}}
-                            </x-secondary-button>
-                        </div>
+                            </tbody>
+                        </table>
                     </div>
-                @endif
 
+                    <div class="mt-6 flex flex-col gap-3 items-start sm:flex-row sm:justify-center">
+                        <x-secondary-button
+                            class="h-10 w-28"
+                            :disabled="$transactions->onFirstPage()"
+                            @click="page--;
+                                    url.searchParams.set('page', page);
+                                    window.location.href = url.toString();">
+                            {{__('Previous')}}
+                        </x-secondary-button>
+
+                        <form method="get"
+                              @submit.prevent
+                              @submit="url.searchParams.set('page', document.getElementById('page-input').value);
+                                       window.location.href = url.toString();">
+                            <x-text-input id="page-input" name="page" type="text"
+                                          class="{{$transactions->lastPage() < 10 ? 'w-28' : 'w-32' }} h-10 block text-center"
+                                          placeholder="Page {{$transactions->currentPage()}} of {{$transactions->lastPage()}}">
+                            </x-text-input>
+                        </form>
+
+                        <x-secondary-button
+                            class="h-10 w-28"
+                            :disabled="$transactions->onLastPage()"
+                            @click="page++;
+                                    url.searchParams.set('page', page);
+                                    window.location.href = url.toString();">
+                            {{__('Next')}}
+                        </x-secondary-button>
+                    </div>
             </div>
+            @endif
+
         </div>
+    </div>
     </div>
 </x-app-layout>

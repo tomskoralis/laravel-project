@@ -47,6 +47,12 @@
             @endif
         </div>
 
+        <div>
+            <x-input-label for="password" :value="__('Password')" />
+            <x-text-input id="password" name="password" type="password" class="mt-1 block w-full" autocomplete="password-edit" />
+            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        </div>
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 

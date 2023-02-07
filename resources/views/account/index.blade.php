@@ -14,56 +14,70 @@
                         {{__('No accounts found!')}}
                     </p>
                 @else
-                    <div class="max-w-xl">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                            {{__('All Accounts')}}
-                        </h3>
-
-                        <div
-                            @if ($accountsHaveLabel)
-                                class="text-right dark:text-white grid grid-cols-[minmax(8rem,_auto)_minmax(6rem,_auto)_minmax(8rem,_auto)_minmax(5rem,_auto)]"
-                            @else
-                                class="text-right dark:text-white grid grid-cols-[minmax(8rem,_auto)_minmax(8rem,_auto)_minmax(5rem,_auto)]"
-                            @endif
-                        >
-                            <div class="pr-3 font-bold text-left flex items-end">
-                                {{__('Number')}}
-                            </div>
-                            @if ($accountsHaveLabel)
-                                <div class="pr-3 font-bold flex items-end justify-end">
-                                    {{__('Label')}}
-                                </div>
-                            @endif
-                            <div class="pr-3 font-bold flex items-end justify-end">
-                                {{__('Balance')}}
-                            </div>
-                            <div class="font-bold flex items-end justify-end">
-                                {{__('Currency')}}
-                            </div>
-                            @foreach($accounts as $account)
-                                <div class="pr-3 border-t-2 border-gray-300 dark:border-gray-700 text-left">
-                                    <a class="underline text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
-                                       href="{{route('account.show', $account->id)}}">
-                                        {{$account->number}}
-                                    </a>
-                                </div>
-                                @if ($accountsHaveLabel)
-                                    <div
-                                        class="pr-3 border-t-2 border-gray-300 dark:border-gray-700 text-ellipsis whitespace-nowrap overflow-hidden">
-                                        {!!$account->label!!}
-                                    </div>
-                                @endif
-                                <div class="pr-3 border-t-2 border-gray-300 dark:border-gray-700">
-                                    @if($account->balance < 0)
-                                        <span class="text-red-600">{{$account->balanceFormatted}}</span>
-                                    @else
-                                        {{$account->balanceFormatted}}
+                    <div class="text-gray-900 dark:text-gray-100">
+                        <div class="h-fit relative overflow-x-auto shadow-md sm:rounded-lg border border-gray-500">
+                            <table class="w-full text-sm md:text-base text-left">
+                                <caption
+                                    class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-gray-100 dark:bg-gray-800">
+                                    {{__('All Accounts')}}
+                                    <p class="mt-1 text-sm md:text-base font-normal text-gray-500 dark:text-gray-400">
+                                        {{__('Information about all your accounts.')}}
+                                    </p>
+                                </caption>
+                                <thead
+                                    class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                <tr>
+                                    <th scope="col" class="px-2 md:px-6 py-2">
+                                        {{__('Number')}}
+                                    </th>
+                                    @if ($accountsHaveLabel)
+                                        <th scope="col" class="px-2 md:px-6 py-2 text-center">
+                                            {{__('Label')}}
+                                        </th>
                                     @endif
-                                </div>
-                                <div class="border-t-2 border-gray-300 dark:border-gray-700">
-                                    {{$account->currency}}
-                                </div>
-                            @endforeach
+                                    <th scope="col" class="px-2 md:px-6 py-2 text-center">
+                                        {{__('Balance')}}
+                                    </th>
+                                    <th scope="col" class="px-2 md:px-6 py-2 text-center">
+                                        {{__('Currency')}}
+                                    </th>
+                                    <th scope="col" class="px-2 md:px-6 py-2">
+                                        <span class="sr-only">{{__('Details')}}</span>
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @foreach($accounts as $account)
+                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600">
+                                        <th scope="row"
+                                            class="px-2 md:px-6 py-2 font-medium whitespace-nowrap">
+                                            {{$account->number}}
+                                        </th>
+                                        @if ($accountsHaveLabel)
+                                            <td class="px-2 md:px-6 py-2 text-center">
+                                                {!!$account->label!!}
+                                            </td>
+                                        @endif
+                                        <td class="px-2 md:px-6 py-2 text-center">
+                                            @if($account->balance < 0)
+                                                <span class="text-red-600">{{$account->balanceFormatted}}</span>
+                                            @else
+                                                {{$account->balanceFormatted}}
+                                            @endif
+                                        </td>
+                                        <td class="px-2 md:px-6 py-2 text-center">
+                                            {{$account->currency}}
+                                        </td>
+                                        <td class="px-2 md:px-6 py-2 text-right">
+                                            <a class="underline text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                                               href="{{route('account.show', $account->id)}}">
+                                                {{__('Details')}}
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 @endif
@@ -75,7 +89,7 @@
                     </p>
                 @endif
 
-                <div class="mt-4 flex gap-2">
+                <div class="mt-4 flex gap-2 justify-between">
                     @if(!$accounts->isEmpty())
                         <a href="{{route('transaction.create')}}">
                             <x-primary-button>

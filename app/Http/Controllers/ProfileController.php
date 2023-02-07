@@ -41,8 +41,6 @@ class ProfileController extends Controller
 
         Auth::logout();
 
-//        $user->delete();
-//        echo "<pre>"; var_dump(now()); die();
         $user = $user->fill(['deleted_at' => now()]);
         $user->save();
 

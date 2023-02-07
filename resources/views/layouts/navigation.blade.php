@@ -55,7 +55,7 @@
 
                     <x-slot name="content">
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            {{ __('Settings') }}
                         </x-dropdown-link>
                         <x-dropdown-link :href="route('codes.update')">
                             {{ __('Security Codes') }}
@@ -118,7 +118,7 @@
 
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
+                    {{ __('Settings') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('codes.update')">
                     {{ __('Security Codes') }}
