@@ -12,12 +12,14 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:flex">
-                    <x-nav-link :href="route('accounts.index')" :active="request()->routeIs('accounts.index')">
+                    <x-nav-link :href="route('accounts.index')"
+                                :active="request()->routeIs('accounts.index', 'account.show', 'account.edit', 'account.close', 'account.create')">
                         {{ __('Accounts') }}
                     </x-nav-link>
                 </div>
                 <div class="hidden space-x-8 sm:-my-px sm:flex">
-                    <x-nav-link :href="route('transactions.index')" :active="request()->routeIs('transactions.index')">
+                    <x-nav-link :href="route('transactions.index')"
+                                :active="request()->routeIs('transactions.index', 'transaction.show', 'transaction.create')">
                         {{ __('Transactions') }}
                     </x-nav-link>
                 </div>
@@ -28,8 +30,8 @@
                 </div>
                 <div class="hidden space-x-8 sm:-my-px sm:flex">
                     <x-nav-link :href="route('cryptocurrencies.index')"
-                                :active="request()->routeIs('cryptocurrencies.index')">
-                        {{ __('Cryptocurrencies') }}
+                                :active="request()->routeIs('cryptocurrencies.index', 'cryptocurrency.show', 'cryptocurrency.buyForm', 'cryptocurrency.sellForm')">
+                        {{ __('Crypto') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -95,16 +97,19 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('accounts.index')" :active="request()->routeIs('accounts.index')">
+            <x-responsive-nav-link :href="route('accounts.index')"
+                                   :active="request()->routeIs('accounts.index', 'account.show', 'account.edit', 'account.close', 'account.create')">
                 {{ __('Accounts') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('transactions.index')" :active="request()->routeIs('transactions.index')">
+            <x-responsive-nav-link :href="route('transactions.index')"
+                                   :active="request()->routeIs('transactions.index', 'transaction.show', 'transaction.create')">
                 {{ __('Transactions') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('exchange-rates')" :active="request()->routeIs('exchange-rates')">
                 {{ __('Exchange Rates') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('cryptocurrencies.index')" :active="request()->routeIs('cryptocurrencies.index')">
+            <x-responsive-nav-link :href="route('cryptocurrencies.index')"
+                                   :active="request()->routeIs('cryptocurrencies.index', 'cryptocurrency.show', 'cryptocurrency.buyForm', 'cryptocurrency.sellForm')">
                 {{ __('Cryptocurrencies') }}
             </x-responsive-nav-link>
         </div>

@@ -65,12 +65,20 @@ class TransactionCreated
                 : round($incomingAmount, 2);
         }
 
-        Account::where('id', $transaction->from_account_id)
-            ->decrement('balance', $transaction->outgoing_amount);
-        Account::where('id', $transaction->to_account_id)
-            ->increment('balance', $incomingAmount);
-        $transaction = $transaction->fill(['incoming_amount' => $incomingAmount]);
-        $transaction->save();
+        if ($incomingAmount > 0) {
+            $fromAccountBalanceBefore = $fromAccount->value('balance');;
+            $toAccountBalanceBefore = $toAccount->value('balance');
+
+            $fromAccount->decrement('balance', $transaction->outgoing_amount);
+            $toAccount->increment('balance', $incomingAmount);
+
+            if ($toAccountBalanceBefore === $toAccount->value('balance')) {
+                $fromAccount->fill(['balance' => $fromAccountBalanceBefore]);
+            } else {
+                $transaction = $transaction->fill(['incoming_amount' => $incomingAmount]);
+                $transaction->save();
+            }
+        }
     }
 
     public function broadcastOn(): PrivateChannel

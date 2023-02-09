@@ -10,7 +10,7 @@
 
             <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg dark:text-gray-200">
 
-                @if($cryptocurrency === null)
+                @if(!isset($cryptocurrency))
                     <p class="max-w-xl px-4 py-2 mt-2 rounded-lg bg-red-100 border-2 border-red-600 text-sm text-red-600 font-medium">
                         {{__('No cryptocurrency found!')}}
                     </p>

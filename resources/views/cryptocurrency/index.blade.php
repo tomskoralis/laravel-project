@@ -94,9 +94,10 @@
             </div>
 
             <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg"
-                 x-data="{ url: window.location.href} ">
+                 x-data="{ url: window.location.href}">
                 <form method="get" action=""
-                      @submit.prevent="url += '/' + document.getElementById('crypto-input').value.toUpperCase();
+                      @submit.prevent="url += url.slice(-1) !== '/' ? '/' : '';
+                                       url += document.getElementById('crypto-input').value.toUpperCase();
                                        window.location.href = url">
                     <x-input-label for="crypto-input" :value="__('Search any other cryptocurrency by symbol')"/>
                     <x-text-input id="crypto-input" type="text" placeholder="Search"/>

@@ -33,13 +33,14 @@ class CryptocurrencyReadController extends Controller
 
     public function show(Request $request): View
     {
-        GetCryptocurrenciesJob::dispatch($request->symbol, self::CURRENCY);
-
-        $cryptocurrency = Cache::get($request->symbol);
+        if ($request->symbol !== 'rates') {
+            GetCryptocurrenciesJob::dispatch($request->symbol, self::CURRENCY);
+            $cryptocurrency = Cache::get($request->symbol);
+        }
 
         return view('cryptocurrency.show')
             ->with([
-                'cryptocurrency' => $cryptocurrency,
+                'cryptocurrency' => $cryptocurrency ?? null,
                 'convertTo' => self::CURRENCY,
             ]);
     }

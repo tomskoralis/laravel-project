@@ -34,7 +34,7 @@ Route::middleware(['auth', 'prevent-back-history'])->group(function () {
     Route::delete('/settings', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
 
-    Route::get('/exchange-rates', [ExchangeRateController::class, 'index'])
+    Route::get('/rates', [ExchangeRateController::class, 'index'])
         ->name('exchange-rates');
 
     Route::get('/accounts', [AccountReadController::class, 'index'])

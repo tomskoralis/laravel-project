@@ -13,7 +13,7 @@ class TransactionFactory extends Factory
 {
     public function definition(): array
     {
-        $from = Account::inRandomOrder()->limit(1)->get()->first();
+        $from = Account::where('balance', '>', 0)->inRandomOrder()->limit(1)->get()->first();
         return [
             'outgoing_amount' => fake()->randomFloat(2, 0.01, ($from->balance/10)),
             'from_account_id' => $from->id,

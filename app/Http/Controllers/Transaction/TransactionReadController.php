@@ -77,8 +77,8 @@ class TransactionReadController extends Controller
                 auth()->user()->timezone ?? 'UTC'
             )->startOfDay()->setTimezone('UTC');
             if ($dayFrom->lessThan(now()->subYear())) {
-                $dayFrom = now()->subYear();
-                $query['date_from'] = $dayFrom->format('Y-m-d');
+                $dayFrom = now()->subYear()->format('Y-m-d');
+                $query['date_from'] = $dayFrom;
             }
             $transactions = $transactions->where('time', '>', $dayFrom);
         }

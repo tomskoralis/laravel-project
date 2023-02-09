@@ -41,28 +41,30 @@
                                 {{$transaction->amountFormatted}}
                             </td>
                         </tr>
-                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                            <th scope="row" class="px-2 sm:px-6 py-2 font-medium whitespace-nowrap">
-                                @switch($transaction->type)
-                                    @case('Transferring')
-                                    @case('Incoming')
-                                        {{__('Converted from')}}
-                                        @break
-                                    @case('Outgoing')
-                                    @case('Selling')
-                                        {{__('Converted to')}}
-                                        @break
-                                    @case('Buying')
-                                        {{__('Bought with')}}
-                                        @break
-                                    @default
-                                        {{__('Unknown')}}
-                                @endswitch:
-                            </th>
-                            <td class="px-2 sm:px-6 py-2 text-right">
-                                {{$transaction->amountConvertedFormatted}}
-                            </td>
-                        </tr>
+                        @if($transaction->amountFormatted !== $transaction->amountConvertedFormatted)
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                <th scope="row" class="px-2 sm:px-6 py-2 font-medium whitespace-nowrap">
+                                    @switch($transaction->type)
+                                        @case('Incoming')
+                                            {{__('Converted from:')}}
+                                            @break
+                                        @case('Outgoing')
+                                        @case('Transferring')
+                                        @case('Selling')
+                                            {{__('Converted to:')}}
+                                            @break
+                                        @case('Buying')
+                                            {{__('Bought with:')}}
+                                            @break
+                                        @default
+                                            {{__('Unknown:')}}
+                                    @endswitch
+                                </th>
+                                <td class="px-2 sm:px-6 py-2 text-right">
+                                    {{$transaction->amountConvertedFormatted}}
+                                </td>
+                            </tr>
+                        @endif
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                             <th scope="row" class="px-2 sm:px-6 py-2 font-medium whitespace-nowrap">
                                 {{__('From')}}:
