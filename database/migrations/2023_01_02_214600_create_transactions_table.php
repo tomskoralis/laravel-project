@@ -9,10 +9,10 @@ return new class extends Migration {
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->decimal('outgoing_amount', 22, 8)->default('0');
-            $table->decimal('incoming_amount', 22, 8)->nullable();
             $table->unsignedBigInteger('from_account_id');
             $table->unsignedBigInteger('to_account_id');
+            $table->decimal('outgoing_amount', 22, 8)->default('0');
+            $table->decimal('incoming_amount', 22, 8)->nullable();
             $table->timestamp('time')->nullable();
             $table->foreign('from_account_id')->references('id')->on('accounts');
             $table->foreign('to_account_id')->references('id')->on('accounts');

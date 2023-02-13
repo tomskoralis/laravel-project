@@ -20,18 +20,26 @@ class TransactionReadController extends Controller
     public function index(Request $request): View
     {
         $query = $request->all();
-        $userAccounts = auth()->user()->accounts()->whereNull('closed_at');
+
+        /** @var User $user */
+        $user = auth()->user();
+
+        $userAccounts = $user->accounts()->whereNull('closed_at');
         $accountId = $request->input('account_id');
         $cryptoAccountId = $request->input('crypto_account_id');
 
         if ($request->input('crypto')) {
             if ($cryptoAccountId === null || $cryptoAccountId === 'crypto') {
-                $transactions = Transaction::where(function (Builder $query) use ($userAccounts) {
-                    $cryptoAccountIds = $userAccounts->where('type', 'crypto')->pluck('id')->toArray();
-                    return $query
-                        ->whereIn('from_account_id', $cryptoAccountIds)
-                        ->orWhereIn('to_account_id', $cryptoAccountIds);
-                });
+                $transactions = Transaction::query()
+                    ->where(function (Builder $query) use ($userAccounts) {
+                        $cryptoAccountIds = $userAccounts
+                            ->where('type', 'crypto')
+                            ->pluck('id')
+                            ->toArray();
+                        return $query
+                            ->whereIn('from_account_id', $cryptoAccountIds)
+                            ->orWhereIn('to_account_id', $cryptoAccountIds);
+                    });
             } else {
                 $transactions = Transaction::where(function (Builder $query) use ($cryptoAccountId) {
                     return $query
@@ -40,10 +48,13 @@ class TransactionReadController extends Controller
                 });
             }
         } else {
-            $transactions = Transaction::where(function (Builder $query) use ($userAccounts) {
-                $accountIds = $userAccounts->where('type', 'regular')->pluck('id')->toArray();
-                $externalAccountIds = Account::where('type', 'regular')
-                    ->whereNotIn('id', auth()->user()->accounts()->pluck('id')->toArray())
+            $transactions = Transaction::query()->where(function (Builder $query) use ($userAccounts) {
+                $accountIds = $userAccounts->where('type', 'regular')
+                    ->pluck('id')
+                    ->toArray();
+                $externalAccountIds = Account::query()
+                    ->where('type', 'regular')
+                    ->whereNotIn('id', $userAccounts->pluck('id')->toArray())
                     ->pluck('id')
                     ->toArray();
                 return $query
@@ -74,8 +85,9 @@ class TransactionReadController extends Controller
             $dayFrom = Carbon::createFromFormat(
                 'Y-m-d',
                 $request->input('date_from'),
-                auth()->user()->timezone ?? 'UTC'
+                $user->timezone ?? 'UTC'
             )->startOfDay()->setTimezone('UTC');
+
             if ($dayFrom->lessThan(now()->subYear())) {
                 $dayFrom = now()->subYear()->format('Y-m-d');
                 $query['date_from'] = $dayFrom;
@@ -87,8 +99,9 @@ class TransactionReadController extends Controller
             $dayTo = Carbon::createFromFormat(
                 'Y-m-d',
                 $request->input('date_to'),
-                auth()->user()->timezone ?? 'UTC'
+                $user->timezone ?? 'UTC'
             )->endofDay()->setTimezone('UTC');
+
             if ($dayTo->greaterThan(now())) {
                 $dayTo = now();
                 $query['date_to'] = $dayTo->format('Y-m-d');
@@ -99,38 +112,53 @@ class TransactionReadController extends Controller
         if ($request->input('from_user_name')) {
             $transactions = $transactions->whereIn(
                 'from_account_id',
-                Account::whereIn(
-                    'user_id',
-                    User::where(
-                        DB::raw('LOWER(name)'),
-                        'LIKE',
-                        '%' . strtolower($request->input('from_user_name')) . '%'
+                Account::query()
+                    ->whereIn(
+                        'user_id',
+                        User::query()
+                            ->where(
+                                DB::raw('LOWER(name)'),
+                                'LIKE',
+                                '%' . strtolower($request->input('from_user_name')) . '%'
+                            )
+                            ->pluck('id')
+                            ->toArray()
                     )
-                        ->pluck('id')
-                        ->toArray()
-                )->pluck('id')->toArray()
+                    ->pluck('id')
+                    ->toArray()
             );
         }
 
         if ($request->input('to_user_name')) {
             $transactions = $transactions->whereIn(
                 'to_account_id',
-                Account::whereIn(
-                    'user_id',
-                    User::where(
-                        DB::raw('LOWER(name)'),
-                        'LIKE',
-                        '%' . strtolower($request->input('to_user_name')) . '%'
+                Account::query()
+                    ->whereIn(
+                        'user_id',
+                        User::query()
+                            ->where(
+                                DB::raw('LOWER(name)'),
+                                'LIKE',
+                                '%' . strtolower($request->input('to_user_name')) . '%'
+                            )
+                            ->pluck('id')
+                            ->toArray()
                     )
-                        ->pluck('id')
-                        ->toArray()
-                )->pluck('id')->toArray()
+                    ->pluck('id')
+                    ->toArray()
             );
         }
 
-        $accounts = auth()->user()->accounts()->whereNull('closed_at')->where('type', 'regular')->get();
-        $cryptoAccounts = auth()->user()->accounts()->whereNull('closed_at')->where('type', 'crypto')->get();
-        $transactions = $transactions->orderByDesc('id')->paginate(self::COUNT_PER_PAGE);
+        $accounts = $user->accounts()
+            ->whereNull('closed_at')
+            ->where('type', 'regular')
+            ->get();
+        $cryptoAccounts = $user->accounts()
+            ->whereNull('closed_at')
+            ->where('type', 'crypto')
+            ->get();
+        $transactions = $transactions->orderByDesc('id')
+            ->paginate(self::COUNT_PER_PAGE);
 
         return view('transaction.index')
             ->with([
@@ -144,9 +172,12 @@ class TransactionReadController extends Controller
 
     public function show(Transaction $transaction): View
     {
+        /** @var User $user */
+        $user = auth()->user();
+
         if (
-            Account::find($transaction->from_account_id)->user_id !== auth()->user()->id &&
-            Account::find($transaction->to_account_id)->user_id !== auth()->user()->id
+            Account::query()->find($transaction->from_account_id)->user_id !== $user->id &&
+            Account::query()->find($transaction->to_account_id)->user_id !== $user->id
         ) {
             abort(403);
         }

@@ -6,33 +6,51 @@ use App\Http\Controllers\Controller;
 use App\Jobs\GetCryptocurrenciesJob;
 use App\Jobs\GetExchangeRatesJob;
 use App\Models\Account;
+use App\Models\NonEloquent\ExchangeRate;
 use App\Models\Transaction;
+use App\Models\User;
 use App\Rules\SecurityCodeValid;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class CryptocurrencyBuyController extends Controller
 {
     private const CURRENCY = 'EUR';
 
-    public function show(Request $request)
+    public function show(Request $request): View
     {
         $cryptocurrencySymbol = strtoupper($request->symbol);
 
         GetCryptocurrenciesJob::dispatch($cryptocurrencySymbol, self::CURRENCY);
         $cryptocurrency = Cache::get($cryptocurrencySymbol);
+
         $cryptocurrencyName = $cryptocurrency ? $cryptocurrency->getName() : 'Unknown';
 
-        $accounts = auth()->user()->accounts()->whereNull('closed_at')->where('type', 'regular')->get();
-        $cryptoAccounts = auth()->user()->accounts()->whereNull('closed_at')->where([
-            ['type', 'crypto'],
-            ['currency', $cryptocurrencySymbol],
-        ])->get();
+        /** @var User $user */
+        $user = auth()->user();
 
-        $securityCodeNumber = auth()->user()->securityCodes()->inRandomOrder()->limit(1)->get()->value('number');
+        $accounts = $user->accounts()
+            ->whereNull('closed_at')
+            ->where('type', 'regular')
+            ->get();
+
+        $cryptoAccounts = $user->accounts()
+            ->whereNull('closed_at')
+            ->where([
+                ['type', 'crypto'],
+                ['currency', $cryptocurrencySymbol],
+            ])->get();
+
+        $securityCodeNumber = $user->securityCodes()
+            ->inRandomOrder()
+            ->limit(1)
+            ->get()
+            ->value('number');
+
         session(['securityCodeNumber' => $securityCodeNumber]);
 
         return view('cryptocurrency.buy')
@@ -46,29 +64,47 @@ class CryptocurrencyBuyController extends Controller
             ]);
     }
 
-
     public function buy(Request $request): RedirectResponse
     {
         $cryptocurrencySymbol = strtoupper($request->symbol);
 
-        $fromAccount = auth()->user()->accounts()->whereNull('closed_at')->findOrFail($request->from_account_id);
+        /** @var User $user */
+        $user = auth()->user();
 
-        if ($fromAccount->user_id !== auth()->user()->id) {
+        $fromAccount = $user->accounts()
+            ->whereNull('closed_at')
+            ->findOrFail($request->from_account_id);
+
+        if ($fromAccount->user_id !== $user->id) {
             abort(403);
         }
 
         GetExchangeRatesJob::dispatch();
-        $exchangeRate = (new Collection(Cache::get('rates')))->filter(function($rate) use ($fromAccount) {
-            return $rate->getCurrency() === $fromAccount->currency;
-        })->first()->getRate();
 
-        $cryptoAccounts = auth()->user()->accounts()->whereNull('closed_at')->where([
+        if (!Cache::has('rates')) {
+            return redirect()->back()->with('status', 'failed-to-buy');
+        }
+
+        /** @var ExchangeRate $exchangeRate */
+        $exchangeRate = (new Collection(Cache::get('rates')))
+            ->filter(function ($rate) use ($fromAccount) {
+                return $rate->getCurrency() === $fromAccount->currency;
+            })->first();
+
+        $cryptoAccounts = $user->accounts()->whereNull('closed_at')->where([
             ['type', 'crypto'],
             ['currency', $cryptocurrencySymbol],
         ])->get();
 
         GetCryptocurrenciesJob::dispatch($cryptocurrencySymbol, self::CURRENCY);
+
+        if (!Cache::has($cryptocurrencySymbol)) {
+            return redirect()->back()->with('status', 'failed-to-buy');
+        }
+
         $cryptocurrency = Cache::get($cryptocurrencySymbol);
+
+        $price = $cryptocurrency->getPrice() * $exchangeRate->getRate();
 
         $validated = $request->validateWithBag('buyCryptocurrency', [
             'from_account_id' => [
@@ -85,8 +121,8 @@ class CryptocurrencyBuyController extends Controller
                 'required',
                 'numeric',
                 'regex:/^\d*(?:\.\d{1,8})?$/',
-                'min:' . round(0.01 / ($cryptocurrency->getPrice() * $exchangeRate), 8),
-                'max:' . round($fromAccount->balance / ($cryptocurrency->getPrice() * $exchangeRate), 8)
+                'min:' . round(0.01 / $price, 8),
+                'max:' . round($fromAccount->balance / $price, 8)
             ],
             'security_code' => [
                 'required',
@@ -97,22 +133,28 @@ class CryptocurrencyBuyController extends Controller
 
         if (
             $request->to_account_id === 'new' &&
-            !auth()->user()->accounts()->whereNull('closed_at')->where('id', $validated['to_account_id'])->exists()
+            !$user->accounts()
+                ->whereNull('closed_at')
+                ->where('id', $validated['to_account_id'])
+                ->exists()
         ) {
             $toAccount = (new Account)->fill([
                 'type' => 'crypto',
                 'number' => 'LV' . $this->generateAccountNumber(),
                 'currency' => $cryptocurrency->getSymbol(),
-                'label' => $this->generateAccountLabel($cryptocurrency->getName()),
+                'label' => $this->generateAccountLabel($user, $cryptocurrency->getName()),
             ]);
-            $toAccount->user()->associate(auth()->user());
+            $toAccount->user()->associate($user);
             $toAccount->save();
         } else {
-            $toAccount = auth()->user()->accounts()->whereNull('closed_at')->where('id', $validated['to_account_id'])->firstOrFail();
+            $toAccount = $user->accounts()
+                ->whereNull('closed_at')
+                ->where('id', $validated['to_account_id'])
+                ->firstOrFail();
         }
 
-        Transaction::create([
-            'outgoing_amount' => round($cryptocurrency->getPrice() * $exchangeRate * (float)$validated['amount'], 2),
+        Transaction::query()->create([
+            'outgoing_amount' => round($price * (float)$validated['amount'], 2),
             'incoming_amount' => (float)$validated['amount'],
             'from_account_id' => $validated['from_account_id'],
             'to_account_id' => $toAccount->id,
@@ -124,19 +166,28 @@ class CryptocurrencyBuyController extends Controller
     private function generateAccountNumber(): int
     {
         $number = mt_rand(100000000, 999999999);
-        if (Account::where('number', $number)->exists()) {
+        if (Account::query()->where('number', $number)->exists()) {
             return $this->generateAccountNumber();
         }
         return $number;
     }
 
-    private function generateAccountLabel(string $cryptocurrencyName): string
+    private function generateAccountLabel(User $user, string $cryptocurrencyName): string
     {
-        if (!auth()->user()->accounts()->whereNull('closed_at')->where('label', $cryptocurrencyName)->exists()) {
+        if (
+            !$user->accounts()
+                ->whereNull('closed_at')
+                ->where('label', $cryptocurrencyName)
+                ->exists()
+        ) {
             return $cryptocurrencyName;
         }
 
-        $labels = auth()->user()->accounts()->whereNull('closed_at')->pluck('label')->all();
+        $labels = $user
+            ->accounts()
+            ->whereNull('closed_at')
+            ->pluck('label')
+            ->all();
 
         $i = 2;
         while (in_array($cryptocurrencyName . $i, $labels)) {

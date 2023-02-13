@@ -5,6 +5,7 @@ namespace App\Events;
 use App\Jobs\GetCryptocurrenciesJob;
 use App\Jobs\GetExchangeRatesJob;
 use App\Models\Account;
+use App\Models\NonEloquent\ExchangeRate;
 use App\Models\Transaction;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -21,13 +22,18 @@ class TransactionCreated
 
     public function __construct(Transaction $transaction)
     {
-        $fromAccount = Account::where('id', $transaction->from_account_id);
-        $toAccount = Account::where('id', $transaction->to_account_id);
+        $fromAccount = Account::query()->where('id', $transaction->from_account_id);
+        $toAccount = Account::query()->where('id', $transaction->to_account_id);
         $outgoingAmount = (float)$transaction->outgoing_amount;
 
-        if ($fromAccount->value('currency') === $toAccount->value('currency')) {
+        if ($transaction->incoming_amount) {
+            $incomingAmount = $transaction->incoming_amount;
+        } elseif ($fromAccount->value('currency') === $toAccount->value('currency')) {
             $incomingAmount = $outgoingAmount;
-        } elseif ($fromAccount->value('type') === 'regular' && $toAccount->value('type') === 'regular') {
+        } elseif (
+            $fromAccount->value('type') === 'regular' &&
+            $toAccount->value('type') === 'regular'
+        ) {
             $incomingAmount = round(
                 $this->convertCurrency(
                     $outgoingAmount,
@@ -36,8 +42,6 @@ class TransactionCreated
                 ),
                 2
             );
-        } elseif ($transaction->incoming_amount) {
-            $incomingAmount = $transaction->incoming_amount;
         } else {
             $fromCryptocurrencySymbol = $fromAccount->value('type') === 'crypto'
                 ? $fromAccount->value('currency')
@@ -73,7 +77,7 @@ class TransactionCreated
             $toAccount->increment('balance', $incomingAmount);
 
             if ($toAccountBalanceBefore === $toAccount->value('balance')) {
-                $fromAccount->fill(['balance' => $fromAccountBalanceBefore]);
+                $fromAccount->update(['balance' => $fromAccountBalanceBefore]);
             } else {
                 $transaction = $transaction->fill(['incoming_amount' => $incomingAmount]);
                 $transaction->save();
@@ -100,8 +104,12 @@ class TransactionCreated
     private function getExchangeRate(string $currency): float
     {
         GetExchangeRatesJob::dispatch();
-        return (new Collection(Cache::get('rates')))->filter(function ($rate) use ($currency) {
+
+        /** @var ExchangeRate $exchangeRate */
+        $exchangeRate = (new Collection(Cache::get('rates')))->filter(function ($rate) use ($currency) {
             return $rate->getCurrency() === $currency;
-        })->first()->getRate();
+        })->first();
+
+        return $exchangeRate->getRate();
     }
 }

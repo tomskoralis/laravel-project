@@ -43,17 +43,23 @@ class Transaction extends Model
     {
         $type = $this->getTypeAttribute();
         if ($type === 'Incoming' || $type === 'Buying') {
-            return (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::CURRENCY))
-                ->formatCurrency(
-                    $this->outgoing_amount,
-                    Account::where('id', $this->from_account_id)->value('currency')
-                );
+            $formatter = (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::CURRENCY));
+            if ($this->fromAccount()->value('type') === 'crypto') {
+                $formatter->setAttribute(\NumberFormatter::MAX_FRACTION_DIGITS, 8);
+            }
+            return $formatter->formatCurrency(
+                $this->outgoing_amount,
+                Account::where('id', $this->from_account_id)->value('currency')
+            );
         } else {
-            return (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::CURRENCY))
-                ->formatCurrency(
-                    $this->incoming_amount,
-                    Account::where('id', $this->to_account_id)->value('currency')
-                );
+            $formatter = (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::CURRENCY));
+            if ($this->toAccount()->value('type') === 'crypto') {
+                $formatter->setAttribute(\NumberFormatter::MAX_FRACTION_DIGITS, 8);
+            }
+            return $formatter->formatCurrency(
+                $this->incoming_amount,
+                Account::where('id', $this->to_account_id)->value('currency')
+            );
         }
     }
 
@@ -61,22 +67,31 @@ class Transaction extends Model
     {
         $type = $this->getTypeAttribute();
         if ($type === 'Incoming' || $type === 'Buying') {
-            return (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::CURRENCY))
-                ->formatCurrency(
-                    $this->incoming_amount,
-                    Account::where('id', $this->to_account_id)->value('currency')
-                );
+            $formatter = (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::CURRENCY));
+            if ($this->toAccount()->value('type') === 'crypto') {
+                $formatter->setAttribute(\NumberFormatter::MAX_FRACTION_DIGITS, 8);
+            }
+            return $formatter->formatCurrency(
+                $this->incoming_amount,
+                Account::where('id', $this->to_account_id)->value('currency')
+            );
         } else {
-            return (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::CURRENCY))
-                ->formatCurrency(
-                    $this->outgoing_amount,
-                    Account::where('id', $this->from_account_id)->value('currency')
-                );
+            $formatter = (new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::CURRENCY));
+            if ($this->fromAccount()->value('type') === 'crypto') {
+                $formatter->setAttribute(\NumberFormatter::MAX_FRACTION_DIGITS, 8);
+            }
+            return $formatter->formatCurrency(
+                $this->outgoing_amount,
+                Account::where('id', $this->from_account_id)->value('currency')
+            );
         }
     }
 
     public function getTypeAttribute(): string
     {
+        if (!isset($this->incoming_amount)) {
+            return 'FAILED';
+        }
         $incomingAccount = Account::where('id', $this->to_account_id)->get();
         $outgoingAccount = Account::where('id', $this->from_account_id)->get();
         $incoming = $incomingAccount->contains('user_id', auth()->user()->id);

@@ -9,12 +9,12 @@ return new class extends Migration {
     {
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id');
             $table->string('type', 16)->default('regular');
             $table->string('number', 16)->unique();
             $table->string('label', 64)->nullable();
             $table->decimal('balance', 24, 8)->default('0');
             $table->string('currency', 16);
-            $table->unsignedBigInteger('user_id');
             $table->timestamps();
             $table->timestamp('closed_at')->nullable();
             $table->foreign('user_id')->references('id')->on('users');

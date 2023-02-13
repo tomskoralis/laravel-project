@@ -9,7 +9,12 @@ class EmailValid implements InvokableRule
 {
     public function __invoke($attribute, $value, $fail)
     {
-        if (User::whereNull('deleted_at')->where('email', $value)->doesntExist()) {
+        if (
+            User::query()
+                ->whereNull('deleted_at')
+                ->where('email', $value)
+                ->doesntExist()
+        ) {
             $fail('These credentials do not match our records.');
         }
     }

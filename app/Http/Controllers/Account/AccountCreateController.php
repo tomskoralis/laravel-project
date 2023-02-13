@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Account;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\SecurityCode;
+use App\Models\User;
 use App\Rules\CurrencyValid;
 use App\Rules\SecurityCodeValid;
 use App\Rules\UserLabelUnique;
@@ -17,7 +18,11 @@ class AccountCreateController extends Controller
 {
     public function create(): View
     {
-        $securityCodeNumber = SecurityCode::where('user_id', auth()->user()->id)
+        /** @var User $user */
+        $user = auth()->user();
+
+        $securityCodeNumber = SecurityCode::query()
+            ->where('user_id', $user->id)
             ->inRandomOrder()
             ->limit(1)
             ->get()
@@ -139,7 +144,11 @@ class AccountCreateController extends Controller
     private function generateAccountNumber(): int
     {
         $number = mt_rand(100000000, 999999999);
-        if (Account::where('number', $number)->exists()) {
+        if (
+            Account::query()
+                ->where('number', $number)
+                ->exists()
+        ) {
             return $this->generateAccountNumber();
         }
         return $number;

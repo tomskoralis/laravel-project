@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
@@ -22,9 +23,12 @@ class SecurityCodesController extends Controller
             'password' => ['required', 'current-password'],
         ]);
 
+        /** @var User $user */
+        $user = auth()->user();
+
         $newCodes = new Collection();
 
-        foreach (auth()->user()->securityCodes()->get() as $securityCode) {
+        foreach ($user->securityCodes()->get() as $securityCode) {
             $newCode = Str::random(8);
             $securityCode->fill(['code' => Hash::make($newCode)])
                 ->save();
@@ -39,8 +43,13 @@ class SecurityCodesController extends Controller
 
     public function index(Request $request): View
     {
-        $securityCodes = $request->session()->pull('securityCodes');
-        $timeUpdatedAt = auth()->user()->securityCodes()->first()->updatedAtFormatted;
+        /** @var User $user */
+        $user = auth()->user();
+
+        $securityCodes = $request->session()
+            ->pull('securityCodes');
+        $timeUpdatedAt = $user->securityCodes()
+            ->first()->updatedAtFormatted;
 
         return view('code.index')->with([
             'securityCodes' => $securityCodes,

@@ -82,12 +82,6 @@
                     </div>
                 @endif
 
-                @if (session('status') === 'account-closed')
-                    <p x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 5000)"
-                       class="text-sm text-green-600 dark:text-green-400">
-                        {{__('Account Closed.')}}
-                    </p>
-                @endif
 
                 <div class="mt-4 flex gap-2 justify-between">
                     @if(!$accounts->isEmpty())
@@ -96,8 +90,16 @@
                                 {{__('New Transaction')}}
                             </x-primary-button>
                         </a>
-
                     @endif
+
+                    @if (session('status') === 'account-closed')
+                        <p x-data="{ show: true }" x-show="show" x-transition
+                           x-init="setTimeout(() => show = false, 5000)"
+                           class="mt-4 text-sm text-green-600 dark:text-green-400">
+                            {{__('Account Closed.')}}
+                        </p>
+                    @endif
+
                     <a href="{{route('account.create')}}">
                         <x-primary-button>
                             {{__('Create Account')}}

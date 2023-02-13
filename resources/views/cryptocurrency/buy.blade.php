@@ -94,6 +94,14 @@
                                             {{__('Transaction successful.')}}
                                         </p>
                                     @endif
+
+                                    @if (session('status') === 'failed-to-buy')
+                                        <p x-data="{ show: true }" x-show="show" x-transition
+                                           x-init="setTimeout(() => show = false, 5000)"
+                                           class="text-sm text-red-600 dark:text-red-400">
+                                            {{__('Transaction failed!')}}
+                                        </p>
+                                    @endif
                                 </div>
                             </form>
                         @endif
